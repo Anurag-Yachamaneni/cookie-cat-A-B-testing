@@ -1,0 +1,79 @@
+
+```{r}
+# Loading Data
+df <- read.csv("C:/Users/Sahil Paryani/Desktop/cookie_cats.csv")
+View(df)
+```
+```{r}
+# Replacings True and False with 1's and 0's to apply aggregate functions later
+df[ df == "TRUE" ] <- 1
+df[ df == "FALSE" ] <- 0
+View(df)
+```
+
+```{r}
+#regression for retention_1
+model1 = glm(formula = retention_1 ~ sum_gamerounds + as.factor(version),family=binomial("logit"), data = df)
+summary(model1)
+```
+
+```{r}
+# regression for retention_7 with retention_1 as a factor
+model2 = glm(formula = retention_7 ~ sum_gamerounds + as.factor(version) + retention_1,
+             family = binomial("logit"), data = df)
+summary(model2)
+```
+
+```{r}
+# regression for retention_7 without retention_1 as a factor
+model3 = glm(formula = retention_7 ~ sum_gamerounds + as.factor(version),
+             family = binomial("logit"), data = df)
+summary(model3)
+```
+```{r}
+# regression for retention_7 with a new interaction term as a factor
+model4<-glm(retention_7 ~ sum_gamerounds + as.factor(version) + retention_1 + sum_gamerounds:as.factor(version),
+                 family=binomial("logit"),data=df)
+summary(model4)
+```
+
+```{r}
+library(tidyverse)
+library(tidyquant)
+```
+```{r}
+# Dataset Distribution
+df %>%
+  select(version) %>%
+  group_by(version) %>%
+  tally()
+```
+
+```{r}
+#checking retention_1 for both treatment and control groups
+aggregate(df$retention_1, by=list(df$version), FUN=mean)
+```
+```{r}
+#checking retention_7 for both treatment and control groups
+aggregate(df$retention_7, by=list(df$version), FUN=mean)
+```
+
+```{r}
+library("car")
+```
+```{r}
+# Hypothesis for checking significance of versions when predicting retention_1 
+linearHypothesis(model1,"as.factor(version)gate_40=0")
+```
+
+```{r}
+# Hypothesis for checking significance of versions when predicting retention_7
+linearHypothesis(model2,"as.factor(version)gate_40=0")
+```
+
+```{r}
+# Hypothesis for checking significance of versions and sum_gamerounds  when predicting retention_7 
+linearHypothesis(model4,"as.factor(version)gate_40+sum_gamerounds:as.factor(version)gate_40=0")
+```
+
+
